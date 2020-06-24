@@ -1,2 +1,2 @@
 # compscibasics
-For the OCW on Intro to Compsci
+Revisiting basics
