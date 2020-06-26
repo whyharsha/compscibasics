@@ -1,2 +1,6 @@
+#OS_Files
 .DS_Store
 .DS_Store?
+
+#Jupyter Noteboook files
+.ipynb_checkpoints
