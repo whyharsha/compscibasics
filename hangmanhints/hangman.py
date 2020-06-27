@@ -14,14 +14,7 @@ import string
 
 WORDLIST_FILENAME = "words.txt"
 
-
 def load_words():
-    """
-    Returns a list of valid words. Words are strings of lowercase letters.
-    
-    Depending on the size of the word list, this function may
-    take a while to finish.
-    """
     print("Loading word list from file...")
     # inFile: file
     inFile = open(WORDLIST_FILENAME, 'r')
@@ -32,14 +25,7 @@ def load_words():
     print("  ", len(wordlist), "words loaded.")
     return wordlist
 
-
-
 def choose_word(wordlist):
-    """
-    wordlist (list): list of words (strings)
-    
-    Returns a word from wordlist at random
-    """
     return random.choice(wordlist)
 
 # end of helper code
@@ -50,73 +36,154 @@ def choose_word(wordlist):
 # so that it can be accessed from anywhere in the program
 wordlist = load_words()
 
+def check_if_letter_exists(char, list_of_letters):
+    for var in list_of_letters:
+        if (char == var):
+            return True
+    
+    return False
 
 def is_word_guessed(secret_word, letters_guessed):
-    '''
-    secret_word: string, the word the user is guessing; assumes all letters are
-      lowercase
-    letters_guessed: list (of letters), which letters have been guessed so far;
-      assumes that all letters are lowercase
-    returns: boolean, True if all the letters of secret_word are in letters_guessed;
-      False otherwise
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
-
+    if (len(secret_word) <= 0 or len(letters_guessed) <= 0):
+        raise ValueError
+    
+    guessed_word = ""
+    
+    #case insensitive check
+    lower_case_secret = secret_word.lower()
+    lower_case_input = letters_guessed.lower()
+    
+    for char in lower_case_secret:
+        if(check_if_letter_exists(char, lower_case_input)):
+            guessed_word = guessed_word + char
+        else:
+            guessed_word = guessed_word + "_ "
+    
+    if(secret_word == guessed_word):
+        return True
+        
+    return False
 
 def get_guessed_word(secret_word, letters_guessed):
-    '''
-    secret_word: string, the word the user is guessing
-    letters_guessed: list (of letters), which letters have been guessed so far
-    returns: string, comprised of letters, underscores (_), and spaces that represents
-      which letters in secret_word have been guessed so far.
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
-
+    if (len(secret_word) <= 0):
+        raise ValueError
+    
+    guessed_word = ""
+    
+    #case insensitive check
+    lower_case_secret = secret_word.lower()
+    lower_case_letters_guessed = letters_guessed.lower()
+    
+    for char in lower_case_secret:
+        if(check_if_letter_exists(char, lower_case_letters_guessed)):
+            guessed_word = guessed_word + char
+        else:
+            guessed_word = guessed_word + "_ "
+    
+    return guessed_word
 
 def get_available_letters(letters_guessed):
-    '''
-    letters_guessed: list (of letters), which letters have been guessed so far
-    returns: string (of letters), comprised of letters that represents which letters have not
-      yet been guessed.
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    if (len(letters_guessed) <= 0):
+        return string.ascii_lowercase
     
+    alphabet = string.ascii_lowercase
     
+    for char in letters_guessed:
+        
+        index = 0
+        for var in alphabet:
+            if (char == var):
+                alphabet = alphabet[0:index] + alphabet[(index + 1): len(alphabet)]
+                break
+            index = index + 1
+        
+    return alphabet
 
 def hangman(secret_word):
-    '''
-    secret_word: string, the secret word to guess.
+    print("Welcome to Hangman!")
     
-    Starts up an interactive game of Hangman.
+    number_of_guesses = 6
+    letters_guessed = ""
+    available_letters = get_available_letters("")
+    count_invalid_input = 0
+    count_already_entered = 0
+    str_vowels = "aeiou"
     
-    * At the start of the game, let the user know how many 
-      letters the secret_word contains and how many guesses s/he starts with.
-      
-    * The user should start with 6 guesses
+    #Repeat until no guesses left
+    while (number_of_guesses > 0):
+        #reset lostaGuess and invalidInput for every new round of guessing
+        lost_a_guess = False
+        invalid_input = True
+        
+        #Check if the input is valid, if not ask for it again
+        while (invalid_input):
+            print("You've guessed " + get_guessed_word(secret_word, letters_guessed) + " so far.")
+            print("You have " + str(number_of_guesses) + " guesses remaining.")
+            print("Pick one of these: " + available_letters)
+            user_input = input("Take a guess: ")
+            #case insensitive validation of alphabets
+            lower_case_input = user_input.lower()
+            
+            if(len(lower_case_input) == 1 and check_if_letter_exists(lower_case_input, string.ascii_lowercase)):
+                invalid_input = False
+                break       
+            
+            #checks if the user has made 3 invalid inputs in the game, and lose a guess every time after
+            count_invalid_input = count_invalid_input + 1
+                
+            if(count_invalid_input <= 3):
+                print("You can only have three total invalid inputs in the game.")
+                print("You have " + str(3 - count_invalid_input) + " chance(s) remaining.")
+                print("Please select only letters from the English alphabet.")
+            else:
+                number_of_guesses = number_of_guesses - 1
+                lost_a_guess = True
+                print("Invalid input! You lose a guess for incorrect inputs now on.")
+                print("Please select only letters from the English alphabet.")
+                break
+        
+        #check if the letter was already guessed and lose a guess after 3 warnings
+        if(check_if_letter_exists(lower_case_input, letters_guessed)):
+            count_already_entered = count_already_entered + 1
+            if(count_already_entered <= 3):
+                print("You already entered this letter. You can only do that thrice.")
+                print("You lose guesses after that.")
+                print("You have " + str(3 - count_already_entered) + " chance(s) remaining.")
+            else:
+                number_of_guesses = number_of_guesses - 1
+                lost_a_guess = True
+                print("You tried this letter before! You lose a guess for this now on.")
+        
+        if not(lost_a_guess):
+            #If input is valid, update the list of guessed letters
+            letters_guessed = letters_guessed + lower_case_input
 
-    * Before each round, you should display to the user how many guesses
-      s/he has left and the letters that the user has not yet guessed.
-    
-    * Ask the user to supply one guess per round. Remember to make
-      sure that the user puts in a letter!
-    
-    * The user should receive feedback immediately after each guess 
-      about whether their guess appears in the computer's word.
+            #If the word has been guessed, display and exit.
+            if(is_word_guessed(secret_word, letters_guessed)):
+                score = len(secret_word) * number_of_guesses
+                print("You, winner, you! You guessed " + get_guessed_word(secret_word, letters_guessed) + " correctly!")
+                print("Your score is " + str(score) + "!")
+                print("Play again!")
+                break
+            else:
+                #If the input is valid and in the secret word, do not reduce the number of guesses.
+                if(check_if_letter_exists(lower_case_input, secret_word)):
+                    print("Making progress.")
+                else:
+                    #check for vowels and handle the loss of guesses correctly
+                    if(check_if_letter_exists(lower_case_input, str_vowels)):
+                        number_of_guesses = number_of_guesses - 2
+                        print("You guessed an incorrect vowel. You lose 2 guesses.")
+                    else:
+                        number_of_guesses = number_of_guesses - 1
+                        print("You guessed wrong. You lose a guess.")
 
-    * After each guess, you should display to the user the 
-      partially guessed word so far.
+                availableLetters = get_available_letters(letters_guessed)
     
-    Follows the other limitations detailed in the problem write-up.
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
-
+    #User loses, if the number of guesses is 0 and the word has not been guessed.
+    if(number_of_guesses == 0 and not is_word_guessed(secret_word, letters_guessed)):
+        print("Gah! You're out of guesses and luck! The word was " + secret_word + "!")
+        print("Try your luck again. Start over.")
 
 # When you've completed your hangman function, scroll down to the bottom
 # of the file and uncomment the first two lines to test
@@ -126,66 +193,137 @@ def hangman(secret_word):
 
 # -----------------------------------
 
-
-
 def match_with_gaps(my_word, other_word):
-    '''
-    my_word: string with _ characters, current guess of secret word
-    other_word: string, regular English word
-    returns: boolean, True if all the actual letters of my_word match the 
-        corresponding letters of other_word, or the letter is the special symbol
-        _ , and my_word and other_word are of the same length;
-        False otherwise: 
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    if (len(my_word) < 0 or len(other_word) <= 0):
+        raise ValueError
+    
+    lower_case_my_word = my_word.lower()
+    lower_case_other_word = other_word.lower()
 
+    mod_my_word = ""
 
+    #eliminate spaces
+    for letter in lower_case_my_word:
+        if not (letter == " "):
+          mod_my_word = mod_my_word + letter
+    
+    #check length
+    if not (len(mod_my_word) == len(lower_case_other_word)):
+        return False
+    
+    #since length is equal, match characters by index, unless my word has an underscore
+    for index in range(len(lower_case_other_word)):
+        if not (mod_my_word[index] == "_"):
+            if not (mod_my_word[index] == lower_case_other_word[index]):
+                return False
+
+    return True        
 
 def show_possible_matches(my_word):
-    '''
-    my_word: string with _ characters, current guess of secret word
-    returns: nothing, but should print out every word in wordlist that matches my_word
-             Keep in mind that in hangman when a letter is guessed, all the positions
-             at which that letter occurs in the secret word are revealed.
-             Therefore, the hidden letter(_ ) cannot be one of the letters in the word
-             that has already been revealed.
+    if(len(wordlist) == 0):
+      print("No words in the list")
 
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
+    for word in wordlist:
+      if(match_with_gaps(my_word, word)):
+        print(str(word))
 
 
 def hangman_with_hints(secret_word):
-    '''
-    secret_word: string, the secret word to guess.
+    print("Welcome to Hangman (type * (a single asterisk) to get hints)!")
     
-    Starts up an interactive game of Hangman.
+    number_of_guesses = 6
+    letters_guessed = ""
+    count_invalid_input = 0
+    count_already_entered = 0
+    str_vowels = "aeiou"
     
-    * At the start of the game, let the user know how many 
-      letters the secret_word contains and how many guesses s/he starts with.
-      
-    * The user should start with 6 guesses
-    
-    * Before each round, you should display to the user how many guesses
-      s/he has left and the letters that the user has not yet guessed.
-    
-    * Ask the user to supply one guess per round. Make sure to check that the user guesses a letter
-      
-    * The user should receive feedback immediately after each guess 
-      about whether their guess appears in the computer's word.
+    #Repeat until no guesses left
+    while (number_of_guesses > 0):
+        #reset lostaGuess and invalidInput for every new round of guessing
+        lost_a_guess = False
+        invalid_input = True
+        asked_for_hint = False
+        print("The secret word has " + str(len(secret_word)) + " letters.")
+        
+        #Check if the input is valid, if not ask for it again
+        while (invalid_input):
+            print("You've guessed " + get_guessed_word(secret_word, letters_guessed) + " so far.")
+            print("You have " + str(number_of_guesses) + " guesses remaining.")
+            print("Pick one of these: " + get_available_letters(letters_guessed))
+            user_input = input("Take a guess: ")
+            #case insensitive validation of alphabets
+            lower_case_input = user_input.lower()
 
-    * After each guess, you should display to the user the 
-      partially guessed word so far.
-      
-    * If the guess is the symbol *, print out all words in wordlist that
-      matches the current guessed word. 
+            print("Lower case input is " + lower_case_input)
+            
+            if(len(lower_case_input) == 1 and check_if_letter_exists(lower_case_input, string.ascii_lowercase)):
+                invalid_input = False
+                break       
+            
+            #here's where we give hints
+            if(len(lower_case_input) == 1 and lower_case_input == "*"):
+              print("-------------------------------------------------------------")
+              print("Possible matched words are:")
+              temp_guessed_word = get_guessed_word(secret_word, letters_guessed)
+              show_possible_matches(temp_guessed_word)
+              print("-------------------------------------------------------------")
+              asked_for_hint = True
+              break
+
+            #checks if the user has made 3 invalid inputs in the game, and lose a guess every time after
+            count_invalid_input = count_invalid_input + 1
+                
+            if(count_invalid_input <= 3):
+                print("You can only have three total invalid inputs in the game.")
+                print("You have " + str(3 - count_invalid_input) + " chance(s) remaining.")
+                print("Please select only letters from the English alphabet.")
+            else:
+                number_of_guesses = number_of_guesses - 1
+                lost_a_guess = True
+                print("Invalid input! You lose a guess for incorrect inputs now on.")
+                print("Please select only letters from the English alphabet.")
+                break
+        
+        #check if the letter was already guessed and lose a guess after 3 warnings
+        if(check_if_letter_exists(lower_case_input, letters_guessed)):
+            count_already_entered = count_already_entered + 1
+            if(count_already_entered <= 3):
+                print("You already entered this letter. You can only do that thrice.")
+                print("You lose guesses after that.")
+                print("You have " + str(3 - count_already_entered) + " chance(s) remaining.")
+            else:
+                number_of_guesses = number_of_guesses - 1
+                lost_a_guess = True
+                print("You tried this letter before! You lose a guess for this now on.")
+        
+        if not(lost_a_guess or asked_for_hint):
+            #If input is valid, update the list of guessed letters
+            letters_guessed = letters_guessed + lower_case_input
+
+            #If the word has been guessed, display and exit.
+            if(is_word_guessed(secret_word, letters_guessed)):
+                score = len(secret_word) * number_of_guesses
+                print("You, winner, you! You guessed " + get_guessed_word(secret_word, letters_guessed) + " correctly!")
+                print("Your score is " + str(score) + "!")
+                print("Play again!")
+                break
+            else:
+                #If the input is valid and in the secret word, do not reduce the number of guesses.
+                if(check_if_letter_exists(lower_case_input, secret_word)):
+                    print("Making progress.")
+                else:
+                    #check for vowels and handle the loss of guesses correctly
+                    if(check_if_letter_exists(lower_case_input, str_vowels)):
+                        number_of_guesses = number_of_guesses - 2
+                        print("You guessed an incorrect vowel. You lose 2 guesses.")
+                    else:
+                        number_of_guesses = number_of_guesses - 1
+                        print("You guessed wrong. You lose a guess.")
     
-    Follows the other limitations detailed in the problem write-up.
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    #User loses, if the number of guesses is 0 and the word has not been guessed.
+    if(number_of_guesses == 0 and not is_word_guessed(secret_word, letters_guessed)):
+        print("Gah! You're out of guesses and luck! The word was " + secret_word + "!")
+        print("Try your luck again. Start over.")
 
 
 
@@ -201,13 +339,13 @@ if __name__ == "__main__":
     # To test part 2, comment out the pass line above and
     # uncomment the following two lines.
     
-    secret_word = choose_word(wordlist)
-    hangman(secret_word)
+    #secret_word = choose_word(wordlist)
+    #hangman(secret_word)
 
 ###############
     
     # To test part 3 re-comment out the above lines and 
     # uncomment the following two lines. 
     
-    #secret_word = choose_word(wordlist)
-    #hangman_with_hints(secret_word)
+    secret_word = choose_word(wordlist)
+    hangman_with_hints(secret_word)
