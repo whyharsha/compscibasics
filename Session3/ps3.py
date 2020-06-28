@@ -103,6 +103,9 @@ def get_word_score(word, n):
     
     score_word_len = (len(lower_case_word) * 7) - (3 * (n - len(lower_case_word)))
 
+    if(score_word_len < 0):
+        score_word_len = 0
+
     return max(score_letter_points, score_word_len)
 
 #
