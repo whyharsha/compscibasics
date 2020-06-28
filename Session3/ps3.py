@@ -101,10 +101,7 @@ def get_word_score(word, n):
     for letter in lower_case_word:
         score_letter_points = score_letter_points + int(SCRABBLE_LETTER_VALUES[letter])
     
-    score_word_len = (len(lower_case_word) * 7) - (3 * (n - len(lower_case_word)))
-
-    if(score_word_len < 0):
-        score_word_len = 0
+    score_word_len = max((len(lower_case_word) * 7) - (3 * (n - len(lower_case_word))), 0)
 
     return max(score_letter_points, score_word_len)
 
