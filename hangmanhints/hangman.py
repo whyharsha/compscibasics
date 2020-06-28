@@ -104,7 +104,6 @@ def hangman(secret_word):
     
     number_of_guesses = 6
     letters_guessed = ""
-    available_letters = get_available_letters("")
     count_invalid_input = 0
     count_already_entered = 0
     str_vowels = "aeiou"
@@ -119,7 +118,7 @@ def hangman(secret_word):
         while (invalid_input):
             print("You've guessed " + get_guessed_word(secret_word, letters_guessed) + " so far.")
             print("You have " + str(number_of_guesses) + " guesses remaining.")
-            print("Pick one of these: " + available_letters)
+            print("Pick one of these: " + get_available_letters(letters_guessed))
             user_input = input("Take a guess: ")
             #case insensitive validation of alphabets
             lower_case_input = user_input.lower()
@@ -177,8 +176,6 @@ def hangman(secret_word):
                     else:
                         number_of_guesses = number_of_guesses - 1
                         print("You guessed wrong. You lose a guess.")
-
-                availableLetters = get_available_letters(letters_guessed)
     
     #User loses, if the number of guesses is 0 and the word has not been guessed.
     if(number_of_guesses == 0 and not is_word_guessed(secret_word, letters_guessed)):
