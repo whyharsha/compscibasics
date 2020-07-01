@@ -460,7 +460,7 @@ def play_game(word_list):
                 else:
                     print("Invalid input. Please enter only yes or no.")
         
-        temp_total_score = play_hand(hand)
+        hand_score = play_hand(hand)
 
         #Replay section
         if not replayed_hand:
@@ -476,12 +476,12 @@ def play_game(word_list):
 
                 elif lower_case_replay == "yes":
                     replay_score = play_hand(hand)
-                    total_score += max(temp_total_score, replay_score)
+                    total_score += max(hand_score, replay_score)
                     replayed_hand = True
                     is_invalid_replay_input = False
                 
                 elif lower_case_replay == "no":
-                    total_score += temp_total_score
+                    total_score += hand_score
                     is_invalid_replay_input = False
 
         print("Your total score now stands at: " + str(total_score))
