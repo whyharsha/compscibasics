@@ -145,11 +145,15 @@ def deal_hand(n):
     """
     
     hand={}
-    num_vowels = int(math.ceil(n / 3))
+    #reducing the number of vowels by 1 to allow a wildcard
+    num_vowels = int(math.ceil(n / 3)) - 1
 
     for i in range(num_vowels):
         x = random.choice(VOWELS)
         hand[x] = hand.get(x, 0) + 1
+    
+    #add one wild card per hand
+    hand["*"] = 1
     
     for i in range(num_vowels, n):    
         x = random.choice(CONSONANTS)
@@ -206,36 +210,39 @@ def is_valid_word(word, hand, word_list):
     word_list: list of lowercase strings
     returns: boolean
     """
-    lower_case_word = word.lower()
+    word_freq = get_frequency_dict(word)
+    word_len = len(word)
+
+    if (word_freq.get("*", 0) > 1) or ("*" in word_freq and "*" not in hand):
+        return False
 
     #Take each word in the list
     for var in word_list:
-        is_word_in_list = False
-        is_not_same_word = False #could probably use one less bool here, will revisit
-        are_letters_in_hand = True
+        is_same_word = True
+        letters_in_hand = False
 
         #check the length of our word and the word from the list is equal
-        if (len(lower_case_word) == len(var)):
-            #match each character
-            for index in range(len(var)):
-                #if a character does not match, break the match loop
-                if not (var[index] == word[index]):
-                    is_not_same_word = True
-                    break
-            
-            if not (is_not_same_word):
-                is_word_in_list = True
-        
-        #in parallel, for each word, check if the hand has the required letters
-        letter_freq = get_frequency_dict(var)
+        if not word_len == len(var):
+            is_same_word = False
+        else:
+            verify_hand = hand.copy() #mutable copy
 
-        for letter in letter_freq:
-            count_letter_remaining = hand.get(letter, 0) - letter_freq[letter]
-            #if the available count for any letter is less than zero, the word is invalid
-            if(count_letter_remaining < 0):
-                are_letters_in_hand = False
+            #match each character
+            for index in range(word_len):
+                letter = word[index]
+
+                #if a character does not match, break the match loop, account for wild cards
+                if (not letter == var[index]) or (letter == "*" and var[index] not in VOWELS):
+                    is_same_word = False
+                    break
+
+                #if available letters count not greater than 0, break the match loop
+                if verify_hand.get(letter, 0) > 0:
+                    verify_hand[letter] -= 1
+                else:
+                    letters_in_hand = False
         
-        if(is_word_in_list and are_letters_in_hand):
+        if is_same_word and letters_in_hand:
             return True
 
     return False
@@ -429,7 +436,7 @@ def play_game(word_list):
         is_invalid_input = True
         lower_case_input = ""
 
-        hand = deal_hand(15)
+        hand = deal_hand(HAND_SIZE)
         display_hand(hand)
 
         #Substitution section
