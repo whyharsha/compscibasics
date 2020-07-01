@@ -481,6 +481,7 @@ def play_game(word_list):
                     is_invalid_replay_input = False
                 
                 elif lower_case_replay == "no":
+                    total_score += temp_total_score
                     is_invalid_replay_input = False
 
         print("Your total score now stands at: " + str(total_score))
