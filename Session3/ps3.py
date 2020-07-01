@@ -99,7 +99,7 @@ def get_word_score(word, n):
     score_letter_points = 0
 
     for letter in lower_case_word:
-        score_letter_points = score_letter_points + int(SCRABBLE_LETTER_VALUES[letter])
+        score_letter_points = score_letter_points + SCRABBLE_LETTER_VALUES[letter]
     
     score_word_len = max((len(lower_case_word) * 7) - (3 * (n - len(lower_case_word))), 0)
 
@@ -185,7 +185,7 @@ def update_hand(hand, word):
     letter_freq = get_frequency_dict(word)
     updated_hand = {}
 
-    for letter in letter_freq.keys():
+    for letter in letter_freq:
         count_letter_remaining = hand.get(letter, 0) - letter_freq[letter]
         if(count_letter_remaining > 0):
             updated_hand[letter] = count_letter_remaining
@@ -229,7 +229,7 @@ def is_valid_word(word, hand, word_list):
         #in parallel, for each word, check if the hand has the required letters
         letter_freq = get_frequency_dict(var)
 
-        for letter in letter_freq.keys():
+        for letter in letter_freq:
             count_letter_remaining = hand.get(letter, 0) - letter_freq[letter]
             #if the available count for any letter is less than zero, the word is invalid
             if(count_letter_remaining < 0):
@@ -253,8 +253,8 @@ def calculate_handlen(hand):
     
     hand_len = 0
 
-    for val in hand:
-        hand_len = hand_len + val
+    for key in hand:
+        hand_len = hand_len + hand[key]
     
     return hand_len
 
@@ -288,16 +288,16 @@ def play_hand(hand, word_list):
       returns: the total score for the hand
       
     """
-    total_score = 0
+    hand_score = 0
     handlen = calculate_handlen(hand)
 
-    if(handlen > 0):
+    while handlen > 0:
         print("---------------------------------------------------------------------")
         print("Your hand is as below:")
         display_hand(hand)
         print("---------------------------------------------------------------------")
 
-        user_input = input("Submit a word from the given hand")
+        user_input = input("Enter a word using the letters in the hand: ")
 
         if not (user_input == "!!"):
             lower_case_user_input = user_input.lower()
@@ -305,18 +305,18 @@ def play_hand(hand, word_list):
             if(is_valid_word(lower_case_user_input)):
                 score = get_word_score(lower_case_user_input, handlen)
                 print("Well played! You scored " + str(score) + " points")
-                total_score = total_score + score
-                print("Your total score is now: " + str(total_score))
+                hand_score = hand_score + score
+                print("Your total score is now: " + str(hand_score))
             else:
                 print("Sorry! That was an invalid word.")
                 
             update_hand(hand, lower_case_user_input)
         else:
-            print("Thank you for playing. Your total score is:" + str(total_score))
+            print("Thank you for playing. Your total score is:" + str(hand_score))
     else:
-        print("You ran out of letters! Thank you for playing. Your total score is:" + str(total_score))
+        print("You ran out of letters! Thank you for playing. Your total score is:" + str(hand_score))
         
-    return total_score
+    return hand_score
 
 
 
@@ -351,8 +351,27 @@ def substitute_hand(hand, letter):
     letter: string
     returns: dictionary (string -> int)
     """
+
+    #if letter to be replaced is not in the hand, return the hand
+    if letter not in hand:
+        return hand
     
-    pass  # TO DO... Remove this line when you implement this function
+    #create a substitute hand since we don't want to mutate hand
+    substitute_hand = {}
+    substitute_letter = random.choice(string.ascii_lowercase)
+
+    #ensure substitute letter is not the same as the chosen letter
+    while substitute_letter == letter:
+        substitute_letter = random.choice(string.ascii_lowercase)
+    
+    for character in hand:
+        #ensure the replacement character has the same count as the letter replaced
+        if letter == character:
+            substitute_hand[substitute_letter] = hand[character]
+        else:
+            substitute_hand[character] = hand[character]
+
+    return substitute_hand
        
     
 def play_game(word_list):
@@ -386,7 +405,90 @@ def play_game(word_list):
     word_list: list of lowercase strings
     """
     
-    print("play_game not implemented.") # TO DO... Remove this line when you implement this function
+    is_invalid_input = True
+    number_of_hands = 0
+
+    while is_invalid_input:
+
+        user_input = input("How many hands due to wish to play?")
+
+        if user_input.isdigit() and int(user_input) > 0 and int(user_input) < 16:
+            number_of_hands = int(user_input)
+            is_invalid_input = False
+        else:
+            print("Invalid input. Please enter only numbers over 0 upto 15.")
+    
+    total_score = 0
+    played_a_sub = False
+    replayed_hand = False
+
+    while number_of_hands > 0:
+
+        print("Let's play!")
+
+        is_invalid_input = True
+        lower_case_input = ""
+
+        hand = deal_hand(15)
+        display_hand(hand)
+
+        #Substitution section
+        if not played_a_sub:
+            while is_invalid_input:
+                user_input = input("Would you like to substitute a letter in your hand? Enter yes or no.")
+
+                lower_case_input = user_input.lower()
+
+                if lower_case_input == 'yes':
+                    is_valid_sub_input = False
+
+                    while not is_valid_sub_input:
+                        sub_input = input("Pick a letter in your hand to substitute: ")
+
+                        lower_case_sub = sub_input.lower()
+
+                        if lower_case_sub in string.ascii_lowercase and len(lower_case_sub) == 1:
+                            substitute_hand(hand, lower_case_sub)
+                            is_valid_sub_input = True
+                        else:
+                            print("Invalid input. Please enter a single character from the English alphabet only.")
+                    
+                    is_invalid_input = False
+                    played_a_sub = True
+                elif lower_case_input == 'no':
+                    is_invalid_input = False
+                else:
+                    print("Invalid input. Please enter only yes or no.")
+        
+        temp_total_score = play_hand(hand)
+
+        #Replay section
+        if not replayed_hand:
+            is_invalid_replay_input = True
+
+            while is_invalid_replay_input:
+                replay_input = input("Would you like to replay the hand? Enter yes or no.")
+
+                lower_case_replay = replay_input.lower()
+
+                if not lower_case_replay == "no" or "yes":
+                    print("Invalid input. Please enter only yes or no.")
+
+                elif lower_case_replay == "yes":
+                    replay_score = play_hand(hand)
+                    total_score += max(temp_total_score, replay_score)
+                    replayed_hand = True
+                    is_invalid_replay_input = False
+                
+                elif lower_case_replay == "no":
+                    is_invalid_replay_input = False
+
+        print("Your total score now stands at: " + str(total_score))
+        
+        #end of a hand
+        number_of_hands -= 1
+
+    print("Thank you for playing! Your final score is: " + str(total_score))
     
 
 
