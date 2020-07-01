@@ -471,7 +471,7 @@ def play_game(word_list):
 
                 lower_case_replay = replay_input.lower()
 
-                if not lower_case_replay == "no" or "yes":
+                if not lower_case_replay == "no" or lower_case_replay == "yes":
                     print("Invalid input. Please enter only yes or no.")
 
                 elif lower_case_replay == "yes":
