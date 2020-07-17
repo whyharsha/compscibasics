@@ -36,6 +36,49 @@ def get_permutations(sequence):
 
     return list_of_perms
 
+def get_permutations_v2(sequence, level, result):
+    if level == len(sequence):
+        print(result)
+        return ""
+
+    freq_dict = create_freq_dict(sequence)
+    
+    for letter in freq_dict:
+        mod_seq = build_modified_sequence(sequence, letter)
+        result += letter
+        result += get_permutations_v2(mod_seq, (level + 1), result)
+
+    return result
+
+def create_freq_dict(sequence):
+    freq_dict = {}
+
+    if sequence is not None:
+        for letter in sequence:
+            if letter in freq_dict:
+                freq_dict[letter] += 1
+            else:
+                freq_dict[letter] = 1
+    
+    return freq_dict
+
+def build_modified_sequence(sequence, letter):
+
+    mod_sequence = ""
+    count_letter = 0
+
+    for char in sequence: #abcd #a
+        if char == letter:
+            if count_letter < 1:
+                continue
+            else:
+                mod_sequence += char
+            count_letter += 1
+        else:
+            mod_sequence += char
+    
+    return mod_sequence
+
 if __name__ == '__main__':
 #    #EXAMPLE
 #    example_input = 'abc'
